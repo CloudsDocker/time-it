@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { NavigationContainer } from '@react-navigation/native';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {
   View,
   Text,
@@ -7,10 +10,19 @@ import {
   TextInput,
   ImageBackground,
 } from 'react-native';
-import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import axios from 'axios';
 
-function HomeScreen() {
+// Import your screens
+import DashboardScreen from './screens/DashboardScreen';
+import TimerScreen from './screens/TimerScreen';
+import JobEntryScreen from './screens/JobEntryScreen';
+import StandupScreen from './screens/StandupScreen';
+import BanksScreen from './screens/BankScreen';
+
+const Tab = createBottomTabNavigator();
+
+// Move your existing HomeScreen content to a separate component
+function StatusScreen() {
   const [apiStatus, setApiStatus] = useState('');
   const [apiStatusColor, setApiStatusColor] = useState('gray');
   const [apiStatusIcon, setApiStatusIcon] = useState('help-outline');
@@ -63,7 +75,7 @@ function HomeScreen() {
 
   const handleRefresh = () => {
     console.log("======handleRefresh");
-    setBaseURL(inputURL); // Update base URL
+    setBaseURL(inputURL);
   };
 
   useEffect(() => {
@@ -83,7 +95,6 @@ function HomeScreen() {
       <View style={styles.overlay}>
         <Text style={styles.title}>API and Busy Status Monitor</Text>
 
-        {/* Input Box for Base URL */}
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
@@ -93,18 +104,15 @@ function HomeScreen() {
           />
         </View>
 
-        {/* Refresh Button */}
         <TouchableOpacity style={styles.refreshButton} onPress={handleRefresh}>
           <Text style={styles.refreshButtonText}>Refresh</Text>
         </TouchableOpacity>
 
-        {/* API Status Section */}
         <View style={styles.statusSection}>
           <MaterialIcons name={apiStatusIcon} size={50} color={apiStatusColor} />
           <Text style={[styles.statusText, { color: apiStatusColor }]}>{apiStatus}</Text>
         </View>
 
-        {/* Busy Status Section */}
         <View style={styles.statusSection}>
           <MaterialIcons name={busyStatusIcon} size={50} color={busyStatusColor} />
           <Text style={[styles.statusText, { color: busyStatusColor }]}>{busyStatus}</Text>
@@ -114,9 +122,70 @@ function HomeScreen() {
   );
 }
 
-export default HomeScreen;
+// // Create a placeholder Banks screen
+// function BanksScreen() {
+//   return (
+//     <View style={styles.container}>
+//       <Text style={styles.title}>Banks</Text>
+//     </View>
+//   );
+// }
+
+// Main App component with navigation
+function App() {
+  return (
+    <NavigationContainer>
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          tabBarIcon: ({ focused, color, size }) => {
+            let iconName;
+
+            switch (route.name) {
+              case 'Status':
+                iconName = 'dashboard';
+                break;
+              case 'Dashboard':
+                iconName = 'analytics';
+                break;
+              case 'Timer':
+                iconName = 'timer';
+                break;
+              case 'Job Entry':
+                iconName = 'work';
+                break;
+              case 'Standup':
+                iconName = 'groups';
+                break;
+              case 'Banks':
+                iconName = 'account-balance';
+                break;
+              default:
+                iconName = 'help-outline';
+            }
+
+            return <MaterialIcons name={iconName} size={size} color={color} />;
+          },
+          tabBarActiveTintColor: '#007BFF',
+          tabBarInactiveTintColor: 'gray',
+        })}
+      >
+        <Tab.Screen name="Status" component={StatusScreen} />
+        <Tab.Screen name="Dashboard" component={DashboardScreen} />
+        <Tab.Screen name="Timer" component={TimerScreen} />
+        <Tab.Screen name="Job Entry" component={JobEntryScreen} />
+        <Tab.Screen name="Standup" component={StandupScreen} />
+        <Tab.Screen name="Banks" component={BanksScreen} />
+      </Tab.Navigator>
+    </NavigationContainer>
+  );
+}
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   background: {
     flex: 1,
     resizeMode: 'cover',
@@ -125,7 +194,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent overlay for text readability
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     padding: 20,
   },
   title: {
@@ -180,3 +249,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
+export default App;
