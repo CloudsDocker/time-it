@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
 import { useDispatch } from 'react-redux';
 import { addPomodoro } from '../reducers/taskReducer';
-
 export default function TimerScreen({ route, navigation }) {
-    const { category } = route.params;
+    const { category = 'General' } = route.params || {}; // Default to 'General' if route.params is undefined
     const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 minutes
     const [isActive, setIsActive] = useState(false);
     const dispatch = useDispatch();

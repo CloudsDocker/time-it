@@ -18,6 +18,8 @@ import TimerScreen from './screens/TimerScreen';
 import JobEntryScreen from './screens/JobEntryScreen';
 import StandupScreen from './screens/StandupScreen';
 import BanksScreen from './screens/BankScreen';
+import { Provider } from 'react-redux'; // Import Provider
+import store from './store'; // Import the Redux store
 
 const Tab = createBottomTabNavigator();
 
@@ -132,51 +134,101 @@ function StatusScreen() {
 // }
 
 // Main App component with navigation
+// function App() {
+//   return (
+//     <NavigationContainer>
+//       <Tab.Navigator
+//         screenOptions={({ route }) => ({
+//           tabBarIcon: ({ focused, color, size }) => {
+//             let iconName;
+
+//             switch (route.name) {
+//               case 'Status':
+//                 iconName = 'dashboard';
+//                 break;
+//               case 'Dashboard':
+//                 iconName = 'analytics';
+//                 break;
+//               case 'Timer':
+//                 iconName = 'timer';
+//                 break;
+//               case 'Job Entry':
+//                 iconName = 'work';
+//                 break;
+//               case 'Standup':
+//                 iconName = 'groups';
+//                 break;
+//               case 'Banks':
+//                 iconName = 'account-balance';
+//                 break;
+//               default:
+//                 iconName = 'help-outline';
+//             }
+
+//             return <MaterialIcons name={iconName} size={size} color={color} />;
+//           },
+//           tabBarActiveTintColor: '#007BFF',
+//           tabBarInactiveTintColor: 'gray',
+//         })}
+//       >
+//         <Tab.Screen name="Status" component={StatusScreen} />
+//         <Tab.Screen name="Dashboard" component={DashboardScreen} />
+//         <Tab.Screen name="Timer" component={TimerScreen} />
+//         <Tab.Screen name="Job Entry" component={JobEntryScreen} />
+//         <Tab.Screen name="Standup" component={StandupScreen} />
+//         <Tab.Screen name="Banks" component={BanksScreen} />
+//       </Tab.Navigator>
+//     </NavigationContainer>
+//   );
+// }
+
 function App() {
   return (
-    <NavigationContainer>
-      <Tab.Navigator
-        screenOptions={({ route }) => ({
-          tabBarIcon: ({ focused, color, size }) => {
-            let iconName;
+    <Provider store={store}>
+      <NavigationContainer>
+        <Tab.Navigator
+          screenOptions={({ route }) => ({
+            tabBarIcon: ({ focused, color, size }) => {
+              let iconName;
 
-            switch (route.name) {
-              case 'Status':
-                iconName = 'dashboard';
-                break;
-              case 'Dashboard':
-                iconName = 'analytics';
-                break;
-              case 'Timer':
-                iconName = 'timer';
-                break;
-              case 'Job Entry':
-                iconName = 'work';
-                break;
-              case 'Standup':
-                iconName = 'groups';
-                break;
-              case 'Banks':
-                iconName = 'account-balance';
-                break;
-              default:
-                iconName = 'help-outline';
-            }
+              switch (route.name) {
+                case 'Status':
+                  iconName = 'dashboard';
+                  break;
+                case 'Dashboard':
+                  iconName = 'analytics';
+                  break;
+                case 'Timer':
+                  iconName = 'timer';
+                  break;
+                case 'Job Entry':
+                  iconName = 'work';
+                  break;
+                case 'Standup':
+                  iconName = 'groups';
+                  break;
+                case 'Banks':
+                  iconName = 'account-balance';
+                  break;
+                default:
+                  iconName = 'help-outline';
+              }
 
-            return <MaterialIcons name={iconName} size={size} color={color} />;
-          },
-          tabBarActiveTintColor: '#007BFF',
-          tabBarInactiveTintColor: 'gray',
-        })}
-      >
-        <Tab.Screen name="Status" component={StatusScreen} />
-        <Tab.Screen name="Dashboard" component={DashboardScreen} />
-        <Tab.Screen name="Timer" component={TimerScreen} />
-        <Tab.Screen name="Job Entry" component={JobEntryScreen} />
-        <Tab.Screen name="Standup" component={StandupScreen} />
-        <Tab.Screen name="Banks" component={BanksScreen} />
-      </Tab.Navigator>
-    </NavigationContainer>
+              return <MaterialIcons name={iconName} size={size} color={color} />;
+            },
+            tabBarActiveTintColor: '#007BFF',
+            tabBarInactiveTintColor: 'gray',
+          })}
+        >
+          <Tab.Screen name="Status" component={StatusScreen} />
+          <Tab.Screen name="Dashboard" component={DashboardScreen} />
+          <Tab.Screen name="Timer" component={TimerScreen} />
+          <Tab.Screen name="Job Entry" component={JobEntryScreen} />
+          <Tab.Screen name="Standup" component={StandupScreen} />
+          <Tab.Screen name="Banks" component={BanksScreen} />
+        </Tab.Navigator>
+      </NavigationContainer>
+    </Provider>
   );
 }
 
