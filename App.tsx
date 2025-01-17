@@ -18,6 +18,7 @@ import TimerScreen from './screens/TimerScreen';
 import JobEntryScreen from './screens/JobEntryScreen';
 import StandupScreen from './screens/StandupScreen';
 import BanksScreen from './screens/BankScreen';
+import TimeManagementScreen from './screens/TimeManagementScreen';
 import { Provider } from 'react-redux'; // Import Provider
 import store from './store'; // Import the Redux store
 
@@ -226,6 +227,7 @@ function App() {
           <Tab.Screen name="Job Entry" component={JobEntryScreen} />
           <Tab.Screen name="Standup" component={StandupScreen} />
           <Tab.Screen name="Banks" component={BanksScreen} />
+          <Tab.Screen name="TimeManagementScreen" component={TimeManagementScreen}/>
         </Tab.Navigator>
       </NavigationContainer>
     </Provider>
