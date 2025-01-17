@@ -5,6 +5,8 @@
 ```shell
 npm install @react-navigation/bottom-tabs react-native-screens react-native-safe-area-context react-native-gesture-handler react-native-reanimated react-native-vector-icons
 npm install @react-native-async-storage/async-storage
+npm install react-native-keyboard-aware-scroll-view
+
 
 yarn add axios
 ```

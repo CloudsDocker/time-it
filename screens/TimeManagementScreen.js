@@ -7,9 +7,14 @@ import {
     TextInput,
     ScrollView,
     SafeAreaView,
+    KeyboardAvoidingView,
+    Platform,
+    Keyboard,
+    TouchableWithoutFeedback,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const STORAGE_KEY = '@time_management_tasks';
 
@@ -20,7 +25,6 @@ const TimeManagementScreen = () => {
     const [tasks, setTasks] = useState({});
     const [timer, setTimer] = useState(null);
 
-    // Load saved tasks on mount
     useEffect(() => {
         loadTasks();
         const timeInterval = setInterval(() => {
@@ -30,7 +34,6 @@ const TimeManagementScreen = () => {
         return () => clearInterval(timeInterval);
     }, []);
 
-    // Load tasks from AsyncStorage
     const loadTasks = async () => {
         try {
             const savedTasks = await AsyncStorage.getItem(STORAGE_KEY);
@@ -42,7 +45,6 @@ const TimeManagementScreen = () => {
         }
     };
 
-    // Save tasks to AsyncStorage
     const saveTasks = async (newTasks) => {
         try {
             await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newTasks));
@@ -51,7 +53,6 @@ const TimeManagementScreen = () => {
         }
     };
 
-    // Generate time slots
     const generateTimeSlots = () => {
         const slots = [];
         const now = new Date();
@@ -81,8 +82,6 @@ const TimeManagementScreen = () => {
     const handleSlotSelect = (time) => {
         setSelectedSlot(time);
         setTaskInput(tasks[time.getTime()] || '');
-
-        // If there's an existing timer, clear it
         if (timer) {
             clearInterval(timer);
         }
@@ -96,18 +95,14 @@ const TimeManagementScreen = () => {
             };
             setTasks(newTasks);
             await saveTasks(newTasks);
-
-            // Start 30-minute timer
             startTimer();
-
-            // Clear input and selection
             setTaskInput('');
             setSelectedSlot(null);
         }
     };
 
     const startTimer = () => {
-        let timeLeft = 30 * 60; // 30 minutes in seconds
+        let timeLeft = 30 * 60;
         const newTimer = setInterval(() => {
             timeLeft -= 1;
             if (timeLeft <= 0) {
@@ -119,63 +114,68 @@ const TimeManagementScreen = () => {
 
     return (
         <SafeAreaView style={styles.container}>
-            {/* Current Time Display */}
-            <View style={styles.header}>
-                <Icon name="clock-outline" size={24} color="#007AFF" />
-                <Text style={styles.currentTime}>{formatTime(currentTime)}</Text>
-            </View>
+            <KeyboardAwareScrollView
+                contentContainerStyle={styles.scrollContainer}
+                enableOnAndroid={true}
+                extraScrollHeight={100} // Adjusts the scroll height to ensure the input is visible
+            >
+                    <View style={styles.container}>
+                        <View style={styles.header}>
+                            <Icon name="clock-outline" size={24} color="#007AFF" />
+                            <Text style={styles.currentTime}>{formatTime(currentTime)}</Text>
+                        </View>
 
-            <View style={styles.content}>
-                {/* Time Slots */}
-                <View style={styles.timeSlots}>
-                    <Text style={styles.sectionTitle}>Time Slots</Text>
-                    <ScrollView style={styles.scrollView}>
-                        {generateTimeSlots().map((time) => (
-                            <TouchableOpacity
-                                key={time.getTime()}
-                                style={[
-                                    styles.timeSlot,
-                                    selectedSlot?.getTime() === time.getTime() && styles.selectedSlot
-                                ]}
-                                onPress={() => handleSlotSelect(time)}
-                            >
-                                <Text style={styles.timeSlotText}>{formatTimeSlot(time)}</Text>
-                                {tasks[time.getTime()] && (
-                                    <View style={styles.taskIndicator}>
-                                        <Text style={styles.taskText} numberOfLines={1}>
-                                            {tasks[time.getTime()]}
-                                        </Text>
-                                        <Icon name="check" size={20} color="#4CAF50" />
-                                    </View>
-                                )}
-                            </TouchableOpacity>
-                        ))}
-                    </ScrollView>
-                </View>
+                        <View style={styles.content}>
+                            <View style={styles.timeSlots}>
+                                <Text style={styles.sectionTitle}>Time Slots</Text>
+                                <ScrollView style={styles.scrollView}>
+                                    {generateTimeSlots().map((time) => (
+                                        <TouchableOpacity
+                                            key={time.getTime()}
+                                            style={[
+                                                styles.timeSlot,
+                                                selectedSlot?.getTime() === time.getTime() && styles.selectedSlot
+                                            ]}
+                                            onPress={() => handleSlotSelect(time)}
+                                        >
+                                            <Text style={styles.timeSlotText}>{formatTimeSlot(time)}</Text>
+                                            {tasks[time.getTime()] && (
+                                                <View style={styles.taskIndicator}>
+                                                    <Text style={styles.taskText} numberOfLines={1}>
+                                                        {tasks[time.getTime()]}
+                                                    </Text>
+                                                    <Icon name="check" size={20} color="#4CAF50" />
+                                                </View>
+                                            )}
+                                        </TouchableOpacity>
+                                    ))}
+                                </ScrollView>
+                            </View>
 
-                {/* Task Input Section */}
-                <View style={styles.taskInput}>
-                    <Text style={styles.sectionTitle}>Task Details</Text>
-                    <TextInput
-                        style={styles.input}
-                        value={taskInput}
-                        onChangeText={setTaskInput}
-                        placeholder="Enter task description..."
-                        multiline
-                        disabled={!selectedSlot}
-                    />
-                    <TouchableOpacity
-                        style={[
-                            styles.saveButton,
-                            (!selectedSlot || !taskInput.trim()) && styles.disabledButton
-                        ]}
-                        onPress={handleSaveTask}
-                        disabled={!selectedSlot || !taskInput.trim()}
-                    >
-                        <Text style={styles.saveButtonText}>Save Task</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
+                            <View style={styles.taskInput}>
+                                <Text style={styles.sectionTitle}>Task Details</Text>
+                                <TextInput
+                                    style={styles.input}
+                                    value={taskInput}
+                                    onChangeText={setTaskInput}
+                                    placeholder="Enter task description..."
+                                    multiline
+                                    editable={!!selectedSlot}
+                                />
+                                <TouchableOpacity
+                                    style={[
+                                        styles.saveButton,
+                                        (!selectedSlot || !taskInput.trim()) && styles.disabledButton
+                                    ]}
+                                    onPress={handleSaveTask}
+                                    disabled={!selectedSlot || !taskInput.trim()}
+                                >
+                                    <Text style={styles.saveButtonText}>Save Task</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </View>
+                </KeyboardAwareScrollView>
         </SafeAreaView>
     );
 };
