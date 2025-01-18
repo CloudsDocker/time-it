@@ -20,7 +20,8 @@ const STORAGE_KEY = '@time_management_tasks';
 
 const TimeManagementScreen = () => {
     const [currentTime, setCurrentTime] = useState(new Date());
-    const [selectedSlot, setSelectedSlot] = useState(null);
+    // Store the selected time as a timestamp for reliable comparison
+    const [selectedTimeStamp, setSelectedTimeStamp] = useState(null);
     const [taskInput, setTaskInput] = useState('');
     const [tasks, setTasks] = useState({});
     const [timer, setTimer] = useState(null);
@@ -79,9 +80,11 @@ const TimeManagementScreen = () => {
         return `${formatTime(startTime)} - ${formatTime(endTime)}`;
     };
 
+    // Update the handler to work with timestamps
     const handleSlotSelect = (time) => {
-        setSelectedSlot(time);
-        setTaskInput(tasks[time.getTime()] || '');
+        const timeStamp = time.getTime();
+        setSelectedTimeStamp(timeStamp);
+        setTaskInput(tasks[timeStamp] || '');
         if (timer) {
             clearInterval(timer);
         }
@@ -112,17 +115,61 @@ const TimeManagementScreen = () => {
         setTimer(newTimer);
     };
 
+    // In the render section, we'll use the timestamp for comparison
+    const renderTimeSlots = () => {
+        return generateTimeSlots().map((time) => {
+            const timeStamp = time.getTime();
+            const isSelected = selectedTimeStamp === timeStamp;
+            const hasTask = Boolean(tasks[timeStamp]);
+
+            return (
+                <TouchableOpacity
+                    key={timeStamp}
+                    activeOpacity={0.9} // Reduce the default opacity change on press
+                    style={[
+                        styles.timeSlot,
+                        hasTask && styles.filledSlot,
+                        isSelected && styles.selectedSlot,
+                    ]}
+                    onPress={() => handleSlotSelect(time)}
+                >
+                    <Text style={[
+                        styles.timeSlotText,
+                        isSelected && styles.selectedText
+                    ]}>
+                        {formatTimeSlot(time)}
+                    </Text>
+                    {hasTask && (
+                        <View style={styles.taskIndicator}>
+                            <Text style={[
+                                styles.taskText,
+                                isSelected && styles.selectedText
+                            ]} numberOfLines={1}>
+                                {tasks[timeStamp]}
+                            </Text>
+                            <Icon
+                                name="check"
+                                size={20}
+                                color={isSelected ? "#FFFFFF" : "#4CAF50"}
+                            />
+                        </View>
+                    )}
+                </TouchableOpacity>
+            );
+        });
+    };
+
     return (
         <SafeAreaView style={styles.container}>
             <ImageBackground
-                source={require('../assets/busan_capsule.jpg')} // Path to your image
+                source={require('../assets/busan_capsule.jpg')}
                 style={styles.background}
-                resizeMode="cover" // Adjust how the image fits the screen
+                resizeMode="cover"
             >
                 <KeyboardAwareScrollView
                     contentContainerStyle={styles.scrollContainer}
                     enableOnAndroid={true}
-                    extraScrollHeight={100} // Adjusts the scroll height to ensure the input is visible
+                    extraScrollHeight={100}
                 >
                     <View style={styles.container}>
                         <View style={styles.header}>
@@ -134,26 +181,7 @@ const TimeManagementScreen = () => {
                             <View style={styles.timeSlots}>
                                 <Text style={styles.sectionTitle}>Time Slots</Text>
                                 <ScrollView style={styles.scrollView}>
-                                    {generateTimeSlots().map((time) => (
-                                        <TouchableOpacity
-                                            key={time.getTime()}
-                                            style={[
-                                                styles.timeSlot,
-                                                selectedSlot?.getTime() === time.getTime() && styles.selectedSlot
-                                            ]}
-                                            onPress={() => handleSlotSelect(time)}
-                                        >
-                                            <Text style={styles.timeSlotText}>{formatTimeSlot(time)}</Text>
-                                            {tasks[time.getTime()] && (
-                                                <View style={styles.taskIndicator}>
-                                                    <Text style={styles.taskText} numberOfLines={1}>
-                                                        {tasks[time.getTime()]}
-                                                    </Text>
-                                                    <Icon name="check" size={20} color="#4CAF50" />
-                                                </View>
-                                            )}
-                                        </TouchableOpacity>
-                                    ))}
+                                    {renderTimeSlots()}
                                 </ScrollView>
                             </View>
 
@@ -165,15 +193,15 @@ const TimeManagementScreen = () => {
                                     onChangeText={setTaskInput}
                                     placeholder="Enter task description..."
                                     multiline
-                                    editable={!!selectedSlot}
+                                    editable={!!selectedTimeStamp}
                                 />
                                 <TouchableOpacity
                                     style={[
                                         styles.saveButton,
-                                        (!selectedSlot || !taskInput.trim()) && styles.disabledButton
+                                        (!selectedTimeStamp || !taskInput.trim()) && styles.disabledButton
                                     ]}
                                     onPress={handleSaveTask}
-                                    disabled={!selectedSlot || !taskInput.trim()}
+                                    disabled={!selectedTimeStamp || !taskInput.trim()}
                                 >
                                     <Text style={styles.saveButtonText}>Save Task</Text>
                                 </TouchableOpacity>
@@ -215,19 +243,6 @@ const styles = StyleSheet.create({
         flex: 1,
         padding: 16,
     },
-    timeSlots: {
-        flex: 1,
-        marginBottom: 16,
-    },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: '600',
-        marginBottom: 12,
-        color: '#333333',
-    },
-    scrollView: {
-        flex: 1,
-    },
     timeSlot: {
         backgroundColor: '#FFFFFF',
         padding: 16,
@@ -237,18 +252,28 @@ const styles = StyleSheet.create({
         borderColor: '#E0E0E0',
     },
     selectedSlot: {
+        backgroundColor: '#007AFF',
         borderColor: '#007AFF',
-        backgroundColor: '#F0F800',
+        // Add subtle elevation for better visual feedback
+        elevation: 3,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+    },
+    filledSlot: {
+        borderColor: '#4CAF50',
     },
     timeSlotText: {
         fontSize: 16,
         fontWeight: '500',
         color: '#333333',
     },
-    taskIndicator: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginTop: 8,
+    selectedText: {
+        color: '#FFFFFF',
     },
     taskText: {
         flex: 1,
