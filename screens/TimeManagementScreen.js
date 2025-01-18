@@ -10,7 +10,7 @@ import {
     KeyboardAvoidingView,
     Platform,
     Keyboard,
-    TouchableWithoutFeedback,
+    TouchableWithoutFeedback, ImageBackground,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -114,6 +114,11 @@ const TimeManagementScreen = () => {
 
     return (
         <SafeAreaView style={styles.container}>
+            <ImageBackground
+                source={require('../assets/busan_capsule.jpg')} // Path to your image
+                style={styles.background}
+                resizeMode="cover" // Adjust how the image fits the screen
+            >
             <KeyboardAwareScrollView
                 contentContainerStyle={styles.scrollContainer}
                 enableOnAndroid={true}
@@ -176,6 +181,7 @@ const TimeManagementScreen = () => {
                         </View>
                     </View>
                 </KeyboardAwareScrollView>
+            </ImageBackground>
         </SafeAreaView>
     );
 };
@@ -183,13 +189,19 @@ const TimeManagementScreen = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#F5F5F5',
+    },
+    background: {
+        flex: 1,
+    },
+    scrollContainer: {
+        flexGrow: 1,
+        padding: 16,
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         padding: 16,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: 'rgba(255, 255, 255, 0.8)', // Semi-transparent background for readability
         borderBottomWidth: 1,
         borderBottomColor: '#E0E0E0',
     },
