@@ -119,11 +119,11 @@ const TimeManagementScreen = () => {
                 style={styles.background}
                 resizeMode="cover" // Adjust how the image fits the screen
             >
-            <KeyboardAwareScrollView
-                contentContainerStyle={styles.scrollContainer}
-                enableOnAndroid={true}
-                extraScrollHeight={100} // Adjusts the scroll height to ensure the input is visible
-            >
+                <KeyboardAwareScrollView
+                    contentContainerStyle={styles.scrollContainer}
+                    enableOnAndroid={true}
+                    extraScrollHeight={100} // Adjusts the scroll height to ensure the input is visible
+                >
                     <View style={styles.container}>
                         <View style={styles.header}>
                             <Icon name="clock-outline" size={24} color="#007AFF" />
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
     },
     selectedSlot: {
         borderColor: '#007AFF',
-        backgroundColor: '#F0F8FF',
+        backgroundColor: '#F0F800',
     },
     timeSlotText: {
         fontSize: 16,
