@@ -15,13 +15,27 @@ import { Picker } from '@react-native-picker/picker';
 
 const STORAGE_KEY = '@time_management_tasks';
 
+// Move helper functions outside the component to avoid scope issues
+const formatTime = (date) => {
+    return new Date(parseInt(date)).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+    });
+};
+
+const formatTimeSlot = (startTime) => {
+    const endTime = new Date(startTime.getTime() + 30 * 60000);
+    return `${formatTime(startTime.getTime().toString())} - ${formatTime(endTime.getTime().toString())}`;
+};
+
 const TimeManagementScreen = () => {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [selectedTimeSlot, setSelectedTimeSlot] = useState('');
     const [taskInput, setTaskInput] = useState('');
     const [tasks, setTasks] = useState({});
 
-    // Generate time slots once and memoize them to prevent regeneration on each render
+    // Now timeSlots can safely use formatTimeSlot since it's defined outside the component
     const timeSlots = useMemo(() => {
         const slots = [];
         const now = new Date();
@@ -36,7 +50,7 @@ const TimeManagementScreen = () => {
             });
         }
         return slots;
-    }, [currentTime]); // Only regenerate when currentTime changes
+    }, [currentTime]);
 
     useEffect(() => {
         loadTasks();
@@ -66,31 +80,13 @@ const TimeManagementScreen = () => {
         }
     };
 
-    // Format time consistently for display
-    const formatTime = (date) => {
-        return new Date(parseInt(date)).toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true
-        });
-    };
-
-    // Format time slot range with proper handling of date objects
-    const formatTimeSlot = (startTime) => {
-        const endTime = new Date(startTime.getTime() + 30 * 60000);
-        return `${formatTime(startTime.getTime().toString())} - ${formatTime(endTime.getTime().toString())}`;
-    };
-
-    // Handle time slot selection with proper state updates
     const handleTimeSlotChange = (timestamp) => {
-        // Prevent the picker from resetting by checking if the value is valid
         if (timestamp) {
             setSelectedTimeSlot(timestamp);
             setTaskInput(tasks[parseInt(timestamp)] || '');
         }
     };
 
-    // Save task with proper state cleanup
     const handleSaveTask = async () => {
         if (selectedTimeSlot && taskInput.trim()) {
             const timeStamp = parseInt(selectedTimeSlot);
@@ -100,7 +96,6 @@ const TimeManagementScreen = () => {
             };
             setTasks(newTasks);
             await saveTasks(newTasks);
-            // Don't reset selectedTimeSlot here to maintain picker selection
             setTaskInput('');
         }
     };
@@ -137,7 +132,7 @@ const TimeManagementScreen = () => {
                                         <Picker.Item 
                                             label="Select a time slot" 
                                             value="" 
-                                            enabled={!selectedTimeSlot} // Disable default option once a selection is made
+                                            enabled={!selectedTimeSlot}
                                         />
                                         {timeSlots.map((slot) => (
                                             <Picker.Item
