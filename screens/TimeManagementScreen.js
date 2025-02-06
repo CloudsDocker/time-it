@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
     View,
     Text,
@@ -17,10 +17,26 @@ const STORAGE_KEY = '@time_management_tasks';
 
 const TimeManagementScreen = () => {
     const [currentTime, setCurrentTime] = useState(new Date());
-    // Initialize with empty string instead of null
     const [selectedTimeSlot, setSelectedTimeSlot] = useState('');
     const [taskInput, setTaskInput] = useState('');
     const [tasks, setTasks] = useState({});
+
+    // Generate time slots once and memoize them to prevent regeneration on each render
+    const timeSlots = useMemo(() => {
+        const slots = [];
+        const now = new Date();
+        now.setMinutes(Math.floor(now.getMinutes() / 30) * 30);
+        now.setSeconds(0);
+
+        for (let i = 0; i < 8; i++) {
+            const slotTime = new Date(now.getTime() + i * 30 * 60000);
+            slots.push({
+                timestamp: slotTime.getTime().toString(),
+                label: formatTimeSlot(slotTime)
+            });
+        }
+        return slots;
+    }, [currentTime]); // Only regenerate when currentTime changes
 
     useEffect(() => {
         loadTasks();
@@ -50,23 +66,7 @@ const TimeManagementScreen = () => {
         }
     };
 
-    const generateTimeSlots = () => {
-        const slots = [];
-        const now = new Date();
-        now.setMinutes(Math.floor(now.getMinutes() / 30) * 30);
-        now.setSeconds(0);
-
-        for (let i = 0; i < 8; i++) {
-            const slotTime = new Date(now.getTime() + i * 30 * 60000);
-            slots.push({
-                // Convert timestamp to string for the picker
-                timestamp: slotTime.getTime().toString(),
-                label: formatTimeSlot(slotTime)
-            });
-        }
-        return slots;
-    };
-
+    // Format time consistently for display
     const formatTime = (date) => {
         return new Date(parseInt(date)).toLocaleTimeString([], {
             hour: '2-digit',
@@ -75,20 +75,24 @@ const TimeManagementScreen = () => {
         });
     };
 
+    // Format time slot range with proper handling of date objects
     const formatTimeSlot = (startTime) => {
         const endTime = new Date(startTime.getTime() + 30 * 60000);
         return `${formatTime(startTime.getTime().toString())} - ${formatTime(endTime.getTime().toString())}`;
     };
 
+    // Handle time slot selection with proper state updates
     const handleTimeSlotChange = (timestamp) => {
-        setSelectedTimeSlot(timestamp);
-        // Convert string timestamp back to number for accessing tasks
-        setTaskInput(tasks[parseInt(timestamp)] || '');
+        // Prevent the picker from resetting by checking if the value is valid
+        if (timestamp) {
+            setSelectedTimeSlot(timestamp);
+            setTaskInput(tasks[parseInt(timestamp)] || '');
+        }
     };
 
+    // Save task with proper state cleanup
     const handleSaveTask = async () => {
         if (selectedTimeSlot && taskInput.trim()) {
-            // Convert string timestamp back to number for storage
             const timeStamp = parseInt(selectedTimeSlot);
             const newTasks = {
                 ...tasks,
@@ -96,8 +100,8 @@ const TimeManagementScreen = () => {
             };
             setTasks(newTasks);
             await saveTasks(newTasks);
+            // Don't reset selectedTimeSlot here to maintain picker selection
             setTaskInput('');
-            setSelectedTimeSlot('');
         }
     };
 
@@ -130,8 +134,12 @@ const TimeManagementScreen = () => {
                                         onValueChange={handleTimeSlotChange}
                                         mode="dropdown"
                                     >
-                                        <Picker.Item label="Select a time slot" value="" />
-                                        {generateTimeSlots().map((slot) => (
+                                        <Picker.Item 
+                                            label="Select a time slot" 
+                                            value="" 
+                                            enabled={!selectedTimeSlot} // Disable default option once a selection is made
+                                        />
+                                        {timeSlots.map((slot) => (
                                             <Picker.Item
                                                 key={slot.timestamp}
                                                 label={`${slot.label}${tasks[parseInt(slot.timestamp)] ? ' (Task Added)' : ''}`}
